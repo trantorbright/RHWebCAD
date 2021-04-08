@@ -2,50 +2,157 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>My first three.js app</title>
+		<title>右手专用简陋在线CAD编辑器</title>
 		<style>
 			body { margin: 0; }
 		</style>
 	</head>
 	<body>
-		<script src="js/three.js"></script>
-		<script>
-			doRender();
-            function doRender(){
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+		<div id="container"></div>
+		<script type = 'module'>
+			import * as THREE from './js/three.module.js';
+			import { TrackballControls } from './jsm/controls/TrackballControls.js';
 
-			    const renderer = new THREE.WebGLRenderer();
-			    renderer.setSize( window.innerWidth, window.innerHeight );
-			    document.body.appendChild( renderer.domElement );
+			import { GUI } from './jsm/libs/dat.gui.module.js';
+			//import { TDSLoader } from './jsm/loaders/TDSLoader.js';
+
+			let container, controls;
+			let camera, scene, renderer;
+			let cube,cube2;
+
+			const params = {
+				Files: '打开文件...',
+				currentFile: '',				
+				animationView: false,
+				lookAhead: false,
+				cameraHelper: false,
+			};
+
+			init();
+			animate();
+			function init(){
+				container = document.getElementById( 'container' );
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 10 );
+				camera.position.z = 2;
+
+				scene = new THREE.Scene();
+				scene.add( new THREE.HemisphereLight() );
+
+				const directionalLight = new THREE.DirectionalLight( 0xffeedd );
+				directionalLight.position.set( 0, 0, 2 );
+				scene.add( directionalLight );
+
+				initControls();
+				/*
+				const loader = new TDSLoader( );
+				loader.setResourcePath( 'models/3ds/portalgun/textures/' );
+				loader.load( 'models/3ds/portalgun/portalgun.3ds', function ( object ) {
+
+					object.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.material.specular.setScalar( 0.1 );
+							child.material.normalMap = normal;
+
+						}
+
+					} );
+
+					scene.add( object );
+
+				} );
+				*/
+
 
 			    const geometry = new THREE.BoxGeometry();
 			    const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-			    const cube = new THREE.Mesh( geometry, material );
+			    cube = new THREE.Mesh( geometry, material );
 			    scene.add( cube );
                 const g2 = new THREE.BoxGeometry(0.4);
 
                 const m2 = new THREE.MeshBasicMaterial({color: 0x0000ff});
 
-                const cube2 = new THREE.Mesh(g2,m2);
+                cube2 = new THREE.Mesh(g2,m2);
                 cube2.position.set( -1, 0, 0 );
                 scene.add(cube2);
 
-			    camera.position.z = 10;
 
-                const animate = function () {
-                    requestAnimationFrame( animate );
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				container.appendChild( renderer.domElement );
 
-				    cube.rotation.x += 0.04;
-				    cube.rotation.y += 0.04;
-                    cube2.rotation.y -=0.08;
-                    cube2.rotation.z -=0.08;
+				controls = new TrackballControls( camera, renderer.domElement );
 
-                    renderer.render( scene, camera );
-                };
+				window.addEventListener( 'resize', resize );
+			}
 
-			animate();
-            }
+			function animate() {
+
+				controls.update();
+				updateObjects();
+				renderer.render( scene, camera );
+				requestAnimationFrame( animate );
+
+			}			
+
+			function initControls(){
+				// dat.GUI
+
+				const gui = new GUI( { width: 300 } );
+
+				const folderFiles = gui.addFolder( '开启文件' );
+				folderFiles.add( params, 'Files').onChange( function () {
+
+					//load file
+
+				} );
+
+				folderFiles.add( params, 'currentFile').onChange( function () {
+					
+
+				} );
+
+				folderFiles.open();
+
+				const folderCamera = gui.addFolder( '看一下' );
+				folderCamera.add( params, 'animationView' ).onChange( function () {
+
+					//animateCamera();
+
+				} );
+				folderCamera.add( params, 'lookAhead' ).onChange( function () {
+
+					//animateCamera();
+
+				} );
+				folderCamera.add( params, 'cameraHelper' ).onChange( function () {
+
+					//animateCamera();
+
+				} );
+				folderCamera.open();
+
+			}
+
+			function resize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}			
+
+			function updateObjects(){
+				cube.rotation.x +=0.02;
+				cube.rotation.y +=0.02;
+				cube2.rotation.z +=0.08;
+				cube2.rotation.y += 0.04;
+			}
+
+
 		</script>
 	</body>
 </html>
